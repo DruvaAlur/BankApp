@@ -5,27 +5,43 @@ const { Credential } = require("./Credential.js");
 class Customer {
   static allCustomers = [];
 
-  constructor(firstName, lastName, credential) {
+  constructor(firstName, lastName, credential, role) {
     this.firstName = firstName;
     this.lastName = lastName;
     this.customerId = uuid.v4();
     this.totalBalance = 0;
     this.accounts = [];
     this.credential = credential;
+    this.role = role;
   }
-  static async createCustomer(firstName, lastName, username, password) {
+  static async createCustomer(firstName, lastName, username, password, role) {
     const [flag, message, newCredential] = Credential.createCredential(
       username,
       password
     );
-    newCredential.password = await newCredential.getHashOfPassword();
     if (!flag) {
-      return message;
+      return false;
     }
-    let newCustomer = new Customer(firstName, lastName, newCredential);
-    this.allCustomers.push(newCustomer);
+    newCredential.password = await newCredential.getHashOfPassword();
+
+    let newCustomer = new Customer(firstName, lastName, newCredential, role);
+    Customer.allCustomers.push(newCustomer);
+    console.log(newCustomer);
     return newCustomer;
   }
+  // static async createAdmin(firstName, lastName, username, password) {
+  //   const [flag, message, newCredential] = Credential.createCredential(
+  //     username,
+  //     password
+  //   );
+  //   newCredential.password = await newCredential.getHashOfPassword();
+  //   if (!flag) {
+  //     return message;
+  //   }
+  //   let newCustomer = new Customer(firstName, lastName, newCredential);
+  //   this.allCustomers.push(newCustomer);
+  //   return newCustomer;
+  // }
 
   static findCustomer(username) {
     // console.log(Customer.allCustomers[0]);
@@ -51,11 +67,11 @@ class Customer {
 
   createAccount(bankAbbre) {
     if (!Bank.isBankExist(bankAbbre)) {
-      return "bank not exist";
+      return false;
     }
     let [index, isAccountExists] = this.isAccountExists(bankAbbre);
     if (isAccountExists) {
-      return "account already exists";
+      return false;
     }
     let bank = Bank.findBank(bankAbbre);
 

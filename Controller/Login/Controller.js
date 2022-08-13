@@ -21,6 +21,6 @@ async function login(req, resp) {
   const newPayload = new JWTPayload(Customer.allCustomers[indexOfCustomer]);
   const newToken = newPayload.createToken();
   resp.cookie("myToken", newToken);
-  resp.status(200).send("Loggin Done");
+  resp.status(200).send(Customer.allCustomers[indexOfCustomer]);
 }
 module.exports = { login };

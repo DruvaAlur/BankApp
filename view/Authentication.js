@@ -3,6 +3,7 @@ class JWTPayload {
   static secratekey = "strongPassword";
   constructor(customer) {
     this.username = customer.credential.username;
+    this.role = customer.role;
   }
   createToken() {
     return jwt.sign(JSON.stringify(this), JWTPayload.secratekey);
@@ -11,6 +12,28 @@ class JWTPayload {
     return jwt.verify(token, JWTPayload.secratekey);
   }
   static isValidCustomer(req, resp) {
+    const myToken = req.cookies["myToken"];
+    // console.log(myToken);
+    if (!myToken) {
+      resp.status(504).send("Login required");
+      return false;
+    }
+    const newPayload = JWTPayload.verifyCookie(myToken);
+    console.log(newPayload.username + "+++++++");
+    console.log(req.params.username);
+    if (newPayload.username != req.params.username) {
+      resp.status(401).send("unauthorized access");
+      return false;
+    }
+
+    // const newPayload = JWTPayload.verifyCookie(myToken);
+    // if (!newPayload.isActive) {
+    //   resp.status(504).send("user not active");
+    //   return false;
+    // }
+    return true;
+  }
+  static isCustomerLoggedIn(req, resp) {
     const myToken = req.cookies["myToken"];
     // console.log(myToken);
     if (!myToken) {
@@ -28,6 +51,58 @@ class JWTPayload {
     //   resp.status(504).send("user not active");
     //   return false;
     // }
+    resp.status(201).send("valid Customer");
+    return true;
+  }
+  static isValidAdmin(req, resp) {
+    const myToken = req.cookies["myToken"];
+    // console.log(myToken);
+    if (!myToken) {
+      resp.status(504).send("Login required");
+      return false;
+    }
+
+    const newPayload = JWTPayload.verifyCookie(myToken);
+    if (newPayload.role != "admin") {
+      resp.status(401).send("Admin Login Required");
+      return false;
+    }
+    // if (newPayload.username != req.params.username) {
+    //   resp.status(401).send("unauthorized access");
+    //   return false;
+    // }
+
+    // const newPayload = JWTPayload.verifyCookie(myToken);
+    // if (!newPayload.isActive) {
+    //   resp.status(504).send("user not active");
+    //   return false;
+    // }
+    return true;
+  }
+  static isAdminLoggedIn(req, resp) {
+    const myToken = req.cookies["myToken"];
+    // console.log(myToken);
+    if (!myToken) {
+      resp.status(504).send("Login required");
+      return false;
+    }
+
+    const newPayload = JWTPayload.verifyCookie(myToken);
+    if (newPayload.role != "admin") {
+      resp.status(401).send("Admin Login Required");
+      return false;
+    }
+    if (newPayload.username != req.params.username) {
+      resp.status(401).send("unauthorized access");
+      return false;
+    }
+
+    // const newPayload = JWTPayload.verifyCookie(myToken);
+    // if (!newPayload.isActive) {
+    //   resp.status(504).send("user not active");
+    //   return false;
+    // }
+    resp.status(201).send("valid admin");
     return true;
   }
 }

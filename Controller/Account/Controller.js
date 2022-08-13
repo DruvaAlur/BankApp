@@ -7,18 +7,24 @@ function createNewAccount(req, resp) {
     return "please login";
   }
   const username = req.params.username;
+
   const { bankAbbre } = req.body;
+  console.log(username, bankAbbre);
   if (username == null || bankAbbre == null) {
-    resp.status(200).send("send all required parameters");
+    return resp.status(401).send("send all required parameters");
   }
   let [indexOfCustomer, iscustomerexist] = Customer.findCustomer(username);
   if (!iscustomerexist) {
-    resp.status(200).send("customer doesnt exists");
+    return resp.status(401).send("customer doesnt exists");
   }
   console.log(indexOfCustomer);
-  resp
-    .status(200)
-    .send(Customer.allCustomers[indexOfCustomer].createAccount(bankAbbre));
+  const tempAcc =
+    Customer.allCustomers[indexOfCustomer].createAccount(bankAbbre);
+  if (!tempAcc) {
+    return resp.status(401).send("Account already exists");
+  }
+  console.log(tempAcc);
+  resp.status(200).send(tempAcc);
 }
 function getAllAccounts(req, resp) {
   const isValidCustomer = JWTPayload.isValidCustomer(req, resp);

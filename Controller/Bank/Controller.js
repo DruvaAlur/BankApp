@@ -1,11 +1,23 @@
 const { Bank } = require("../../view/Bank.js");
-
+const { JWTPayload } = require("../../view/Authentication");
 function createBank(req, resp) {
   const { bankName, bankAbbre } = req.body;
-  if (bankName == null || bankAbbre == null) {
-    resp.status(200).send("send all required parameters");
+  if (
+    bankName == null ||
+    bankAbbre == null ||
+    bankName == "" ||
+    bankAbbre == ""
+  ) {
+    resp.status(401).send("send all required parameters");
   }
-  resp.status(200).send(Bank.createBank(bankName, bankAbbre));
+  if (!JWTPayload.isValidAdmin(req, resp)) {
+    return resp.status(401).send("unAuthorized access");
+  }
+  let bank = Bank.createBank(bankName, bankAbbre);
+  if (!bank) {
+    resp.status(400).send("Bank Already exists");
+  }
+  resp.status(200).send(bank);
 }
 function getAllBanks(req, resp) {
   resp.status(200).send(Bank.getAllBanks());

@@ -8,7 +8,7 @@ class Bank {
   }
   static createBank(bankName, bankAbbre) {
     if (Bank.isBankExist(bankAbbre)) {
-      return "bank already exists";
+      return false;
     }
     let newBank = new Bank(bankName, bankAbbre);
     Bank.allBanks.push(newBank);
