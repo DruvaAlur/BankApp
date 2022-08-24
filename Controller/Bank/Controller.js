@@ -1,6 +1,8 @@
 const { Bank } = require("../../view/Bank.js");
 const { JWTPayload } = require("../../view/Authentication");
 function createBank(req, resp) {
+  console.log("+++++++++++++++");
+  console.log(Bank.allBanks);
   const { bankName, bankAbbre } = req.body;
   if (
     bankName == null ||
@@ -15,7 +17,7 @@ function createBank(req, resp) {
   }
   let bank = Bank.createBank(bankName, bankAbbre);
   if (!bank) {
-    resp.status(400).send("Bank Already exists");
+    return resp.status(400).send("Bank Already exists");
   }
   resp.status(200).send(bank);
 }

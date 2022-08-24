@@ -13,7 +13,8 @@ async function login(req, resp) {
     !(await Credential.comparePassword(
       password,
       Customer.allCustomers[indexOfCustomer].credential.password
-    ))
+    )) ||
+    !Customer.allCustomers[indexOfCustomer].isActive
   ) {
     resp.status(504).send("Invalid Credentials");
     return;

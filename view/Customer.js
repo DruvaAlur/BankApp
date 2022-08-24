@@ -13,6 +13,7 @@ class Customer {
     this.accounts = [];
     this.credential = credential;
     this.role = role;
+    this.isActive = true;
   }
   static async createCustomer(firstName, lastName, username, password, role) {
     const [flag, message, newCredential] = Credential.createCredential(
@@ -74,10 +75,12 @@ class Customer {
       return false;
     }
     let bank = Bank.findBank(bankAbbre);
-
+    console.log("///////////////////////////***********");
+    console.log(bank);
     let newAccount = new Accounts(bank);
 
     this.accounts.push(newAccount);
+    this.updateTotalBalance(this.totalBalance + 1000);
     return newAccount;
   }
 
@@ -115,10 +118,11 @@ class Customer {
     console.log(this.accounts[accountIndex].balance);
     console.log(amount);
     if (this.accounts[accountIndex].balance < amount) {
-      return "Not Sufficient Balance";
+      return false;
     }
     this.accounts[accountIndex].balance -= amount;
     this.updateTotalBalance();
+    console.log(this.accounts[accountIndex].balance + "Adsdasdasd");
     return this.accounts[accountIndex].balance;
   }
 
@@ -164,7 +168,12 @@ class Customer {
   }
 
   selfTransfer(ammount, debitBankAbbre, creditBankAbbre) {
-    this.transfer(ammount, this.customerId, creditBankAbbre, debitBankAbbre);
+    this.transfer(
+      ammount,
+      this.credential.username,
+      creditBankAbbre,
+      debitBankAbbre
+    );
     return "self transfer sucess";
   }
 
@@ -174,6 +183,31 @@ class Customer {
 
   getAllAccounts() {
     return this.accounts;
+  }
+  updateCustomer(propertTobeUpdated, value) {
+    // if (this.isActive == false) {
+    //   return [false, this, "invalid contact"];
+    // }
+
+    switch (propertTobeUpdated) {
+      case "username": {
+        this.credential.username = value;
+
+        return true;
+      }
+      case "firstname": {
+        this.firstName = value;
+
+        return true;
+      }
+      case "lastname": {
+        this.lastName = value;
+
+        return true;
+      }
+      default:
+        return false;
+    }
   }
 }
 module.exports = { Customer };

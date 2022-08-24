@@ -23,7 +23,7 @@ class Bank {
     return false;
   }
   static findBank(bankAbbre) {
-    for (let j = 0; j < bankAbbre.length; j++) {
+    for (let j = 0; j < Bank.allBanks.length; j++) {
       if (bankAbbre == Bank.allBanks[j].bankAbbre) {
         return Bank.allBanks[j];
       }

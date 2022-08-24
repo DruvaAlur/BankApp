@@ -31,25 +31,28 @@ function withdrawMoney(req, resp) {
     return "please login";
   }
   const username = req.params.username;
-  const { amount, bankAbbre } = req.body;
+  const amount = parseInt(req.body.amount);
+  const bankAbbre = req.body.bankAbbre;
   if (amount == null || bankAbbre == null || username == null) {
-    return resp.status(200).send("send all required parameters");
+    return resp.status(401).send("send all required parameters");
   }
   let [indexOfCustomer, iscustomerexist] = Customer.findCustomer(username);
   // console.log(indexOfCustomer);
   if (!iscustomerexist) {
-    return resp.status(200).send("customer doesnt exists");
+    return resp.status(401).send("customer doesnt exists");
   }
   // console.log(indexOfCustomer);
   // console.log(amount);
   // console.log(bankAbbre);
   // console.log(Customer.allCustomers[indexOfCustomer]);
-  resp
-    .status(200)
-    .send(
-      "updated balance=" +
-        Customer.allCustomers[indexOfCustomer].withdrawMoney(amount, bankAbbre)
-    );
+  const withdraw = Customer.allCustomers[indexOfCustomer].withdrawMoney(
+    amount,
+    bankAbbre
+  );
+  if (!withdraw) {
+    resp.status(401).send("not Sufficient Balance");
+  }
+  resp.status(200).send(String(withdraw));
   console.log(amount, bankAbbre);
 }
 function depositMoney(req, resp) {
@@ -64,6 +67,7 @@ function depositMoney(req, resp) {
   if (amount == null || bankAbbre == null || username == null) {
     resp.status(400).send("send all required parameters");
   }
+  console.log(bankAbbre + "=+=+");
   let [indexOfCustomer, iscustomerexist] = Customer.findCustomer(username);
   if (!iscustomerexist) {
     resp.status(400).send("customer doesnt exists");
@@ -72,8 +76,9 @@ function depositMoney(req, resp) {
   resp
     .status(200)
     .send(
-      "updated balance=" +
+      String(
         Customer.allCustomers[indexOfCustomer].depositMoney(amount, bankAbbre)
+      )
     );
 }
 function transfer(req, resp) {
@@ -82,8 +87,12 @@ function transfer(req, resp) {
     return "please login";
   }
   const username = req.params.username;
-  const { amount, creditCustomerusername, creditBankAbbre, debitBankAbbre } =
-    req.body;
+
+  const amount = parseInt(req.body.amount);
+  const creditCustomerusername = req.body.creditCustomerusername;
+  const creditBankAbbre = req.body.creditBankAbbre;
+  const debitBankAbbre = req.body.debitBankAbbre;
+
   if (
     amount == null ||
     creditBankAbbre == null ||
@@ -116,12 +125,15 @@ function selfTransfer(req, resp) {
     return "please login";
   }
   const username = req.params.username;
-  const { amount, creditCustomerId, creditBankAbbre, debitBankAbbre } =
-    req.body;
+  const amount = parseInt(req.body.amount);
+  const { creditCustomerId, creditBankAbbre, debitBankAbbre } = req.body;
   let [indexOfCustomer, iscustomerexist] = Customer.findCustomer(username);
   if (!iscustomerexist) {
-    resp.status(200).send("customer doesnt exists");
+    resp.status(401).send("customer doesnt exists++");
   }
+  console.log(creditBankAbbre + "{}");
+  console.log(debitBankAbbre);
+  console.log(username);
   // console.log(indexOfCustomer);
 
   resp.status(200).send(
@@ -134,20 +146,62 @@ function selfTransfer(req, resp) {
   );
 }
 function getAllCustomers(req, resp) {
-  const isValidAdmin = JWTPayload.isValidAdmin(req, resp);
-  if (!isValidAdmin) {
-    return "please login";
+  // const isValidAdmin = JWTPayload.isValidAdmin(req, resp);
+  // if (!isValidAdmin) {
+  //   return "please login";
+  // }
+  let tempCustomer = [];
+  for (let i = 0; i < Customer.allCustomers.length; i++) {
+    if (Customer.allCustomers[i].role != "admin") {
+      tempCustomer.push(Customer.allCustomers[i]);
+    }
   }
+
   const { limit, pageNumber } = req.body;
+  if (limit == null || pageNumber == null || limit == "" || pageNumber == "") {
+    return resp.status(200).send(tempCustomer);
+  }
   console.log(limit + "{}");
   console.log(pageNumber);
   if (Customer.allCustomers.length === 0) {
     return resp.status(400).send("No users yet");
   }
+
   let startIndex = (pageNumber - 1) * limit;
   let endIndex = pageNumber * limit;
 
-  resp.status(200).send(Customer.allCustomers.slice(startIndex, endIndex));
+  resp.status(200).send(tempCustomer.slice(startIndex, endIndex));
+}
+function toggleActiveFlag(req, resp) {
+  const username = req.body.username;
+  let [index, iscustomerexist] = Customer.findCustomer(username);
+  if (!iscustomerexist) {
+    return resp.status(401).send("customer not exists");
+  }
+
+  Customer.allCustomers[index].isActive =
+    !Customer.allCustomers[index].isActive;
+  resp.status(201).send(Customer.allCustomers[index]);
+}
+function updateCustomer(req, resp) {
+  const isValidAdmin = JWTPayload.isValidAdmin(req, resp);
+  if (!isValidAdmin) {
+    return "please login";
+  }
+  const { propertyToUpdate, value, username } = req.body;
+  console.log(propertyToUpdate + "__");
+  console.log(value);
+  console.log(username);
+  let [indexOfCustomer, isCustomerExist] = Customer.findCustomer(username);
+  console.log(indexOfCustomer);
+  let isUpdate = Customer.allCustomers[indexOfCustomer].updateCustomer(
+    propertyToUpdate,
+    value
+  );
+  if (!isUpdate) {
+    return resp.status(401).send("not updated");
+  }
+  resp.status(201).send("Customer Updated");
 }
 module.exports = {
   createCustomer,
@@ -156,4 +210,6 @@ module.exports = {
   transfer,
   selfTransfer,
   getAllCustomers,
+  toggleActiveFlag,
+  updateCustomer,
 };

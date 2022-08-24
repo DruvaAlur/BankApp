@@ -1,4 +1,5 @@
 const uuid = require("uuid");
+const { Bank } = require("../view/Bank");
 class Accounts {
   static accountNo = 1;
   static allAccounts = [];
@@ -9,6 +10,9 @@ class Accounts {
     this.accountId = uuid.v4();
   }
   isAccountExists(bankAbbre) {
+    console.log(this);
+    console.log("-=-=-=-=-=-=-=-=-=-==-=-=-");
+    console.log(Bank.allBanks);
     if (this.bank.bankAbbre == bankAbbre) {
       return true;
     }

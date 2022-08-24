@@ -7,7 +7,7 @@ const { logout } = require("./Controller/Logout/Controller.js");
 const { createBank, getAllBanks } = require("./Controller/Bank/Controller.js");
 const { Customer } = require("./view/Customer");
 let admin = null;
-
+const { JWTPayload } = require("./view/Authentication");
 const {
   createNewAccount,
   getAllAccounts,
@@ -19,6 +19,8 @@ const {
   transfer,
   selfTransfer,
   getAllCustomers,
+  toggleActiveFlag,
+  updateCustomer,
 } = require("./Controller/Customer/Controller.js");
 
 app.use(cors());
@@ -45,8 +47,10 @@ app.post("/api/v1/login", async (req, resp) => {
 app.post("/api/v1/createCustomer", async (req, resp) => {
   createCustomer(req, resp);
 });
-
-app.post("/api/v1/createAccount/:username", (req, resp) => {
+app.post("/api/v1/updateCustomer", async (req, resp) => {
+  updateCustomer(req, resp);
+});
+app.post("/api/v1/createAccount", (req, resp) => {
   createNewAccount(req, resp);
 });
 app.post("/api/v1/withdrawMoney/:username", (req, resp) => {
@@ -72,6 +76,15 @@ app.get("/api/v1/getAllBanks", (req, resp) => {
 });
 app.post("/api/v1/logout", (req, resp) => {
   logout(req, resp);
+});
+app.post("/api/v1/toggleActiveFlag", (req, resp) => {
+  toggleActiveFlag(req, resp);
+});
+app.post("/api/v1/isUserLoggedIn/:username", (req, resp) => {
+  JWTPayload.isCustomerLoggedIn(req, resp);
+});
+app.post("/api/v1/isAdminLoggedIn/:username", (req, resp) => {
+  JWTPayload.isAdminLoggedIn(req, resp);
 });
 app.listen(8800, async () => {
   await createAdmin();
